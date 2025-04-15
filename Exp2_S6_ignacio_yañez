@@ -1,0 +1,151 @@
+import java.util.*;
+
+public class SistemaVentaEntradas {
+
+    static int totalEntradasVendidas = 0;
+    static double ingresosTotales = 0;
+    static int totalReservas = 0;
+
+    private List<Entrada> entradasVendidas = new ArrayList<>();
+    private Map<String, Entrada> reservas = new HashMap<>();
+    private final int capacidadSala = 50;
+    private final double precioBase = 12000;
+    private final String nombreTeatro = "Teatro Moro";
+
+    private final Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        new SistemaVentaEntradas().mostrarMenu();
+    }
+
+    public void mostrarMenu() {
+        int opcion;
+        do {
+            System.out.println("\n===Menu de Venta===");
+            System.out.println("1. Reservar entradas");
+            System.out.println("2. Comprar entradas");
+            System.out.println("3. Modificar venta existente");
+            System.out.println("4. Imprimir boleta");
+            System.out.println("5. Salir");
+            System.out.print("Selecciona una opcion: ");
+            opcion = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (opcion) {
+                case 1 -> reservarEntrada();
+                case 2 -> comprarEntrada();
+                case 3 -> modificarVenta();
+                case 4 -> imprimirBoleta();
+                case 5 -> System.out.println("Gracias por su visita");
+                default -> System.out.println("Opcion invalida.");
+            }
+
+        } while (opcion != 5);
+    }
+
+    public void reservarEntrada() {
+        depurar("Punto 1: Inicio de reserva - capacidad restante: " + obtenerCapacidadRestante());
+
+        System.out.print("Nombre de reserva: ");
+        String nombre = scanner.nextLine();
+
+        System.out.print("Cantidad de entradas a reservar: ");
+        int cantidad = scanner.nextInt();
+        scanner.nextLine();
+
+        if (!hayCapacidadSuficiente(cantidad)) {
+            System.out.println("No hay entradas disponibles.");
+            return;
+        }
+
+        for (int i = 0; i < cantidad; i++) {
+            String id = generarIdReserva(nombre, i);
+            Entrada entrada = new Entrada(id, precioBase, "A" + (reservas.size() + 1));
+            reservas.put(id, entrada);
+        }
+
+        totalReservas += cantidad;
+        System.out.println("Reservas realizadas correctamente.");
+    }
+
+    public void comprarEntrada() {
+        System.out.print("Nombre de la reserva: ");
+        String nombre = scanner.nextLine();
+
+        List<String> idsAComprar = obtenerReservasPorNombre(nombre);
+
+        if (idsAComprar.isEmpty()) {
+            System.out.println("No se han encontraron reservas a ese nombre.");
+            return;
+        }
+
+        for (String id : idsAComprar) {
+            Entrada entrada = reservas.remove(id);
+            entradasVendidas.add(entrada);
+            totalEntradasVendidas++;
+            ingresosTotales += entrada.getPrecio();
+        }
+
+        System.out.println("Compra realizada.");
+    }
+
+    public void modificarVenta() {
+        System.out.println("Funcion en desarrollo.");
+    }
+
+    public void imprimirBoleta() {
+        System.out.println("===BOLETA===");
+
+        for (Entrada e : entradasVendidas) {
+            System.out.printf("Asiento: %s | Precio: $%.2f%n", e.getUbicacion(), e.getPrecio());
+        }
+
+        depurar("Punto 2: Total de entradas vendidas: " + totalEntradasVendidas);
+        depurar("Punto 3: Total ingresos actuales: $" + ingresosTotales);
+
+        System.out.printf("Total ingresado: $%.2f%n", ingresosTotales);
+    }
+
+    private boolean hayCapacidadSuficiente(int cantidad) {
+        return cantidad > 0 && (cantidad + totalEntradasVendidas + reservas.size()) <= capacidadSala;
+    }
+
+    private int obtenerCapacidadRestante() {
+        return capacidadSala - totalEntradasVendidas - reservas.size();
+    }
+
+    private List<String> obtenerReservasPorNombre(String nombre) {
+        List<String> lista = new ArrayList<>();
+        for (String id : reservas.keySet()) {
+            if (id.startsWith(nombre)) {
+                lista.add(id);
+            }
+        }
+        return lista;
+    }
+
+    private String generarIdReserva(String nombre, int i) {
+        return nombre + "_reserva_" + i;
+    }
+
+    private void depurar(String mensaje) {
+        System.out.println("[DEBUG] " + mensaje);
+    }
+
+
+    class Entrada {
+        private final String id;
+        private final double precio;
+        private final String ubicacion;
+
+        public Entrada(String id, double precio, String ubicacion) {
+            this.id = id;
+            this.precio = precio;
+            this.ubicacion = ubicacion;
+        }
+
+        public String getId() { return id; }
+        public double getPrecio() { return precio; }
+        public String getUbicacion() { return ubicacion; }
+    }
+}
