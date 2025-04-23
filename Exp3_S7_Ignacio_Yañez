@@ -1,0 +1,94 @@
+import java.util.*;
+
+public class TeatroMoro {
+    static Scanner scanner = new Scanner(System.in);
+    static List<String> boletas = new ArrayList<>();
+    static String[] ubicaciones = {"Platea  Alta", "Palco VIP", "Platea Baja"};
+    static double[] precios = {15000, 25000, 10000};
+
+    public static void main(String[] args) {
+        boolean continuar = true;
+        while (continuar) {
+            mostrarMenu();
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+            switch (opcion) {
+                case 1:
+                    venderEntrada();
+                    break;
+                case 2:
+                    mostrarBoletas();
+                    break;
+                case 3:
+                    System.out.println("Gracias por usar el sistema del Teatro Moro.");
+                    continuar = false;
+                    break;
+                default:
+                    System.out.println("Opcion invalida.");
+            }
+        }
+    }
+
+    public static void mostrarMenu() {
+        System.out.println("=== Menu Teatro Moro ===");
+        System.out.println("1.=== Vender entradas ===");
+        System.out.println("2.=== Ver boletas ===");
+        System.out.println("3.=== Salir ===");
+        System.out.print("Selecciona una opcion: ");
+    }
+
+    public static void venderEntrada() {
+        System.out.println("\n=== Seleccione la ubicacion ===:");
+        for (int i = 0; i < ubicaciones.length; i++) {
+            System.out.printf("%d. %s ($%.0f)%n", i + 1, ubicaciones[i], precios[i]);
+        }
+        System.out.print("Ubicacion: ");
+        int ubicacion = scanner.nextInt();
+        scanner.nextLine();
+
+        if (ubicacion < 1 || ubicacion > ubicaciones.length) {
+            System.out.println("Ubicacion incorrecta.");
+            return;
+        }
+
+        double precioBase = precios[ubicacion - 1];
+
+        System.out.print("¿Es estudiante? (si/no): ");
+        boolean esEstudiante = scanner.nextLine().equalsIgnoreCase("si");
+
+        System.out.print("¿Es persona de la tercera edad? (si/no): ");
+        boolean esTerceraEdad = scanner.nextLine().equalsIgnoreCase("si");
+
+        double descuento = 0;
+        if (esEstudiante) {
+            descuento = 0.10;
+        } else if (esTerceraEdad) {
+            descuento = 0.15;
+        }
+
+        double total = precioBase - (precioBase * descuento);
+
+        System.out.println("\n=== Boleta ===");
+        System.out.println("Ubicacion: " + ubicaciones[ubicacion - 1]);
+        System.out.printf("Precio base: $%.0f%n", precioBase);
+        System.out.printf("Descuento: %.0f%%%n", descuento * 100);
+        System.out.printf("Total a pagar: $%.0f%n", total);
+        System.out.println("¡Gracias por tu compra!");
+        String boleta = "Ubicacion: " + ubicaciones[ubicacion - 1] +
+                        ", Precio: $" + precioBase +
+                        ", Descuento: " + (descuento * 100) + "%" +
+                        ", Total: $" + total;
+        boletas.add(boleta);
+    }
+
+    public static void mostrarBoletas() {
+        if (boletas.isEmpty()) {
+            System.out.println("\nNo hay boletas emitidas aún.");
+        } else {
+            System.out.println("\n=== Boletas Emitidas ===");
+            for (String boleta : boletas) {
+                System.out.println(boleta);
+            }
+        }
+    }
+}
