@@ -1,0 +1,252 @@
+package javaapplication9;
+
+import java.util.*;
+
+class Cliente {
+    int id;
+    String nombre;
+    int edad;
+    boolean esEstudiante;
+
+    public Cliente(int id, String nombre, int edad, boolean esEstudiante) {
+        this.id = id;
+        this.nombre = nombre;
+        this.edad = edad;
+        this.esEstudiante = esEstudiante;
+    }
+}
+
+class Asiento {
+    int fila;
+    int columna;
+    boolean ocupado;
+
+    public Asiento(int fila, int columna) {
+        this.fila = fila;
+        this.columna = columna;
+        this.ocupado = false;
+    }
+}
+
+class Venta {
+    int idVenta;
+    Cliente cliente;
+    Asiento asiento;
+    double precio;
+
+    public Venta(int idVenta, Cliente cliente, Asiento asiento, double precio) {
+        this.idVenta = idVenta;
+        this.cliente = cliente;
+        this.asiento = asiento;
+        this.precio = precio;
+    }
+}
+
+class Reserva {
+    int idReserva;
+    Cliente cliente;
+    Asiento asiento;
+
+    public Reserva(int idReserva, Cliente cliente, Asiento asiento) {
+        this.idReserva = idReserva;
+        this.cliente = cliente;
+        this.asiento = asiento;
+    }
+}
+
+public class TeatroMoro {
+    static Scanner scanner = new Scanner(System.in);
+    static Asiento[][] asientos = new Asiento[5][5];
+    static Venta[] ventas = new Venta[100];
+    static Cliente[] clientes = new Cliente[100];
+    static List<Reserva> reservas = new ArrayList<>();
+    static int idVentaActual = 1;
+    static int idReservaActual = 1;
+    static int idClienteActual = 1;
+
+    public static void main(String[] args) {
+        inicializarAsientos();
+        mostrarMenu();
+    }
+
+    public static void mostrarMenu() {
+        int opcion;
+        do {
+            System.out.println("\n ===MENU TEATRO MORO===");
+            System.out.println("1. Vender una entrada");
+            System.out.println("2. Reservar  un asiento");
+            System.out.println("3. Ver ventas hechas");
+            System.out.println("4. Ver reservas");
+            System.out.println("5. Cancelar la reserva");
+            System.out.println("6. Cancelar la venta");
+            System.out.println("0. Salir");
+            System.out.print("Selecciona una opcion: ");
+            opcion = scanner.nextInt();
+
+            switch (opcion) {
+                case 1 -> venderEntrada();
+                case 2 -> reservarAsiento();
+                case 3 -> mostrarVentas();
+                case 4 -> mostrarReservas();
+                case 5 -> cancelarReserva();
+                case 6 -> cancelarVenta();
+                case 0 -> System.out.println("Saliendo.");
+                default -> System.out.println("Opcion invalida.");
+            }
+        } while (opcion != 0);
+    }
+
+    public static void inicializarAsientos() {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                asientos[i][j] = new Asiento(i, j);
+            }
+        }
+    }
+
+    public static Cliente registrarCliente() {
+        scanner.nextLine();
+        System.out.print("Nombre del cliente: ");
+        String nombre = scanner.nextLine();
+        System.out.print("Edad: ");
+        int edad = scanner.nextInt();
+        System.out.print("¿Usted es estudiante? (true/false): ");
+        boolean esEstudiante = scanner.nextBoolean();
+
+        Cliente cliente = new Cliente(idClienteActual++, nombre, edad, esEstudiante);
+
+        for (int i = 0; i < clientes.length; i++) {
+            if (clientes[i] == null) {
+                clientes[i] = cliente;
+                break;
+            }
+        }
+        return cliente;
+    }
+
+    public static void venderEntrada() {
+        Cliente cliente = registrarCliente();
+
+        System.out.print("Fila (0-4): ");
+        int fila = scanner.nextInt();
+        System.out.print("Columna (0-4): ");
+        int columna = scanner.nextInt();
+
+        if (asientos[fila][columna].ocupado) {
+            System.out.println("Asiento ocupado.");
+            return;
+        }
+
+        double precioBase = 25000.0;
+        double precioFinal = aplicarDescuento(precioBase, cliente);
+
+        asientos[fila][columna].ocupado = true;
+        Venta venta = new Venta(idVentaActual++, cliente, asientos[fila][columna], precioFinal);
+
+        for (int i = 0; i < ventas.length; i++) {
+            if (ventas[i] == null) {
+                ventas[i] = venta;
+                break;
+            }
+        }
+
+        System.out.println("Venta realizada con exito. Precio final: $" + precioFinal);
+    }
+
+    public static void reservarAsiento() {
+        Cliente cliente = registrarCliente();
+
+        System.out.print("Fila (0-4): ");
+        int fila = scanner.nextInt();
+        System.out.print("Columna (0-4): ");
+        int columna = scanner.nextInt();
+
+        if (asientos[fila][columna].ocupado) {
+            System.out.println("Asiento ocupado.");
+            return;
+        }
+
+        Reserva reserva = new Reserva(idReservaActual++, cliente, asientos[fila][columna]);
+        reservas.add(reserva);
+
+        System.out.println("Reserva realizada con exito.");
+    }
+
+    public static double aplicarDescuento(double precioBase, Cliente cliente) {
+        if (cliente.esEstudiante) {
+            return precioBase * 0.90;
+        } else if (cliente.edad >= 60) {
+            return precioBase * 0.85;
+        }
+        return precioBase;
+    }
+
+    public static void mostrarVentas() {
+        System.out.println("\nVentas realizadas:");
+        for (Venta venta : ventas) {
+            if (venta != null) {
+                System.out.printf("ID: %d | Cliente: %s | Asiento: [%d,%d] | Precio: %.2f\n",
+                        venta.idVenta,
+                        venta.cliente.nombre,
+                        venta.asiento.fila,
+                        venta.asiento.columna,
+                        venta.precio);
+            }
+        }
+    }
+
+    public static void mostrarReservas() {
+        System.out.println("\nReservas realizadas:");
+        for (Reserva reserva : reservas) {
+            System.out.printf("ID: %d | Cliente: %s | Asiento: [%d,%d]\n",
+                    reserva.idReserva,
+                    reserva.cliente.nombre,
+                    reserva.asiento.fila,
+                    reserva.asiento.columna);
+        }
+    }
+
+    public static void cancelarReserva() {
+        System.out.print("Ingresa el ID de reserva a cancelar: ");
+        int id = scanner.nextInt();
+
+        Reserva reservaAEliminar = null;
+
+        for (Reserva reserva : reservas) {
+            if (reserva.idReserva == id) {
+                reservaAEliminar = reserva;
+                break;
+            }
+        }
+
+        if (reservaAEliminar != null) {
+            reservas.remove(reservaAEliminar);
+            System.out.println("Reserva cancelada con exito.");
+        } else {
+            System.out.println("Reserva no existente.");
+        }
+    }
+
+    public static void cancelarVenta() {
+        System.out.print("Ingrese el ID de venta a cancelar: ");
+        int id = scanner.nextInt();
+        boolean encontrada = false;
+
+        for (int i = 0; i < ventas.length; i++) {
+            if (ventas[i] != null && ventas[i].idVenta == id) {
+                int fila = ventas[i].asiento.fila;
+                int col = ventas[i].asiento.columna;
+                asientos[fila][col].ocupado = false;
+                ventas[i] = null;
+                encontrada = true;
+                break;
+            }
+        }
+
+        if (encontrada) {
+            System.out.println("Venta cancelada y asiento liberado.");
+        } else {
+            System.out.println("Venta no encontrada.");
+        }
+    }
+}
